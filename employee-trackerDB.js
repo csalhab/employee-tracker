@@ -254,7 +254,9 @@ function doAsciiArt() {
 }
 
 // TODO: Create a function to kick off the prompt questions with What Woud You Like To Do?
+//changed from regular function to async/await and with destructering, less code!
 const kickOffPromptQuestionWhatToDo = async () => {
+  //{ whatToDO } is destructering!
   const { whatToDo } = await inquirer.prompt(questionSelectWhatToDo);
   switch (whatToDo) {
     case "View All Employees":
