@@ -179,25 +179,23 @@ function connectDB() {
   });
 }
 
-// TODO: Create a function to ...
+// TODO: Create a function to View All Employees
 function viewAllEmployees() {
-  connectDB();
   connection.query("SELECT * FROM employee", (err, res) => {
     if (err) throw err;
     // Log all results of the SELECT statement
-    console.log(res);
-    connection.end();
+    //console.log(res);
+    doConsoleTable(res);
+    kickOffPromptQuestionWhatToDo();
   });
 }
 
 // TODO: Create a function to ...
 function viewAllEmployeesByDept() {
-  connectDB();
   connection.query("SELECT * FROM employee", (err, res) => {
     if (err) throw err;
     // Log all results of the SELECT statement
     console.log(res);
-    connection.end();
   });
 }
 
@@ -216,27 +214,9 @@ function updateEmployeeRole() {}
 // TODO: Create a function to ...
 function updateEmployeeManager() {}
 
-function doConsoleTable() {
-  const table = cTable.getTable([
-    {
-      name: "foo",
-      age: 10,
-    },
-    {
-      name: "bar",
-      age: 20,
-    },
-  ]);
-
+function doConsoleTable(response) {
+  const table = cTable.getTable(response);
   console.log(table);
-
-  // prints
-  /*
-  name  age
-  ----  ---
-  foo   10
-  bar   20
-  */
 }
 function doAsciiArt() {
   console.log(
@@ -289,6 +269,7 @@ const kickOffPromptQuestionWhatToDo = async () => {
 function init() {
   doAsciiArt();
   doConsoleTable();
+  connectDB();
   kickOffPromptQuestionWhatToDo();
 }
 
