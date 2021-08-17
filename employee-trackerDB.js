@@ -3,6 +3,7 @@
 const logo = require("asciiart-logo");
 const inquirer = require("inquirer");
 const mysql = require("mysql");
+const cTable = require("console.table");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -214,6 +215,28 @@ function updateEmployeeRole() {}
 // TODO: Create a function to ...
 function updateEmployeeManager() {}
 
+function doConsoleTable() {
+  const table = cTable.getTable([
+    {
+      name: "foo",
+      age: 10,
+    },
+    {
+      name: "bar",
+      age: 20,
+    },
+  ]);
+
+  console.log(table);
+
+  // prints
+  /*
+  name  age
+  ----  ---
+  foo   10
+  bar   20
+  */
+}
 function doAsciiArt() {
   console.log(
     logo({
@@ -276,6 +299,7 @@ function kickOffPromptQuestionWhatToDo() {
 // TODO: Create a function to initialize app, display ascii art & trigger all the question prompts
 function init() {
   doAsciiArt();
+  doConsoleTable();
   kickOffPromptQuestionWhatToDo();
 }
 
