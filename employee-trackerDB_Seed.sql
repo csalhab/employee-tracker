@@ -24,5 +24,13 @@ SELECT * FROM role;
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES ("John", "Doe", 1, NULL), ("Mike", "Chan", 2, 1), ("Ashley", "Rodriguez", 2, NULL), ("Kunal", "Singh", 3, NULL), ("Malia", "Brown", 3, 4), ("Tom", "Allen", 4, NULL), ("Duane", "Reade", 1, NULL);
 
-SELECT * FROM employee;
+-- VIEW ALL EMPLOYEES 
+-- self join applied on LEFT JOIN employee emp ..
+-- alias AS applied on department.name to appear as department on column header
+-- alias AS applied for showing manager column header instead of manager_id, this needed concatenating 2 columns for result too
+SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(emp.first_name, ' ' ,emp.last_name) AS manager
+FROM employee
+LEFT JOIN employee emp ON employee.manager_id = emp.id
+INNER JOIN role ON role.id = employee.role_id
+INNER JOIN department ON role.department_id = department.id;
 

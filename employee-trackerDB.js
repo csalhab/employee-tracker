@@ -181,13 +181,16 @@ function connectDB() {
 
 // TODO: Create a function to View All Employees
 function viewAllEmployees() {
-  connection.query("SELECT * FROM employee", (err, res) => {
-    if (err) throw err;
-    // Log all results of the SELECT statement
-    //console.log(res);
-    doConsoleTable(res);
-    kickOffPromptQuestionWhatToDo();
-  });
+  connection.query(
+    "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(emp.first_name, ' ' ,emp.last_name) AS manager FROM employee LEFT JOIN employee emp ON employee.manager_id = emp.id INNER JOIN role ON role.id = employee.role_id INNER JOIN department ON role.department_id = department.id;",
+    (err, res) => {
+      if (err) throw err;
+      // Log all results of the SELECT statement
+      //console.log(res);
+      doConsoleTable(res);
+      kickOffPromptQuestionWhatToDo();
+    }
+  );
 }
 
 // TODO: Create a function to ...
