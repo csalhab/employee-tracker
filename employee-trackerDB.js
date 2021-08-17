@@ -33,6 +33,7 @@ const questionSelectWhatToDo = [
       "Remove Employee",
       "Update Employee Role",
       "Update Employee Manager",
+      "EXIT",
     ],
   },
 ];
@@ -261,27 +262,27 @@ function kickOffPromptQuestionWhatToDo() {
       switch (whatToDoAnsw) {
         case "View All Employees":
           viewAllEmployees();
-          break;
+          return;
         case "View All Employees By Department":
           viewAllEmployeesByDept();
-          break;
+          return;
         case "View All Employees By Manager":
           viewAllEmployeesByManager();
-          break;
+          return;
         case "Add Employee":
           addEmployee();
-          break;
+          return;
         case "Remove Employee":
           removeEmployee();
-          break;
+          return;
         case "Update Employee Role":
           updateEmployeeRole();
-          break;
+          return;
         case "Update Employee Manager":
           updateEmployeeManager();
-          break;
-        default:
-          console.log("You must select an option, else ctl-c to quit app");
+          return;
+        case "EXIT":
+          return connection.end();
       }
     })
     .catch((error) => {
