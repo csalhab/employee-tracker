@@ -34,3 +34,9 @@ LEFT JOIN employee emp ON employee.manager_id = emp.id
 INNER JOIN role ON role.id = employee.role_id
 INNER JOIN department ON role.department_id = department.id;
 
+-- VIEW ALL EMPLOYEES BY DEPARTMENT
+-- value "Engineering" needs to be dynamically provided by prompt
+SELECT employee.id, employee.first_name, employee.last_name, role.title 
+FROM employee
+INNER JOIN role ON role.id = employee.role_id
+INNER JOIN department ON role.department_id = department.id WHERE department.name = "Engineering";
