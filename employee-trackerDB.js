@@ -254,47 +254,33 @@ function doAsciiArt() {
 }
 
 // TODO: Create a function to kick off the prompt questions with What Woud You Like To Do?
-function kickOffPromptQuestionWhatToDo() {
-  inquirer
-    .prompt(questionSelectWhatToDo)
-    .then(function (whatToDoAnswer) {
-      const whatToDoAnsw = whatToDoAnswer.whatToDo;
-      switch (whatToDoAnsw) {
-        case "View All Employees":
-          viewAllEmployees();
-          return;
-        case "View All Employees By Department":
-          viewAllEmployeesByDept();
-          return;
-        case "View All Employees By Manager":
-          viewAllEmployeesByManager();
-          return;
-        case "Add Employee":
-          addEmployee();
-          return;
-        case "Remove Employee":
-          removeEmployee();
-          return;
-        case "Update Employee Role":
-          updateEmployeeRole();
-          return;
-        case "Update Employee Manager":
-          updateEmployeeManager();
-          return;
-        case "EXIT":
-          return connection.end();
-      }
-    })
-    .catch((error) => {
-      if (error.isTtyError) {
-        // Prompt couldn't be rendered in the current environment
-        console.log("error if: " + error.isTtyError);
-      } else {
-        // Something else went wrong
-        console.log("error else: " + error);
-      }
-    });
-}
+const kickOffPromptQuestionWhatToDo = async () => {
+  const { whatToDo } = await inquirer.prompt(questionSelectWhatToDo);
+  switch (whatToDo) {
+    case "View All Employees":
+      return viewAllEmployees();
+    case "View All Employees By Department":
+      viewAllEmployeesByDept();
+      return;
+    case "View All Employees By Manager":
+      viewAllEmployeesByManager();
+      return;
+    case "Add Employee":
+      addEmployee();
+      return;
+    case "Remove Employee":
+      removeEmployee();
+      return;
+    case "Update Employee Role":
+      updateEmployeeRole();
+      return;
+    case "Update Employee Manager":
+      updateEmployeeManager();
+      return;
+    case "EXIT":
+      return connection.end();
+  }
+};
 
 //USER INTERACTIONS ========================================
 // TODO: Create a function to initialize app, display ascii art & trigger all the question prompts
