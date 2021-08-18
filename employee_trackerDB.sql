@@ -56,17 +56,18 @@ FROM employee
 INNER JOIN role ON role.id = employee.role_id
 INNER JOIN department ON role.department_id = department.id WHERE department.name = "Engineering";
 
--- VIEW BY MANAGER
-SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, CONCAT(emp.first_name, ' ' ,emp.last_name) AS manager
-FROM employee
-LEFT JOIN employee emp ON employee.manager_id = emp.id
-INNER JOIN role ON role.id = employee.role_id
-INNER JOIN department ON role.department_id = department.id
-WHERE employee.manager_id = 4;
 
--- VIEW BY EMPLOYEES ID FIRST NAME LAST NAME
+-- VIEW BY EMPLOYEES ID FIRST NAME LAST NAME .. used for choices input!
 SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS employees
 FROM employee
 LEFT JOIN employee emp ON employee.manager_id = emp.id
 INNER JOIN role ON role.id = employee.role_id
 INNER JOIN department ON role.department_id = department.id;
+
+-- VIEW BY MANAGER
+SELECT employee.id, employee.first_name, employee.last_name, department.name AS department, role.title
+FROM employee
+LEFT JOIN employee emp ON employee.manager_id = emp.id
+INNER JOIN role ON role.id = employee.role_id
+INNER JOIN department ON role.department_id = department.id
+WHERE employee.manager_id = 4;

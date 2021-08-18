@@ -193,7 +193,6 @@ function viewAllEmployees() {
   );
 }
 
-// TODO: Create a function to ...
 const viewAllEmployeesByDept = async () => {
   const { byDepartment } = await inquirer.prompt(questionEmployeesByDepartment);
   console.log("byDepartment: " + byDepartment);
@@ -207,9 +206,7 @@ const viewAllEmployeesByDept = async () => {
   );
 };
 
-// TODO: Create a function to ...
 const viewAllEmployeesByManager = () => {
-  //const { byManager } = await inquirer.prompt(questionEmployeesByManager);
   connection.query(
     `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS employees
     FROM employee
@@ -218,13 +215,12 @@ const viewAllEmployeesByManager = () => {
     INNER JOIN department ON role.department_id = department.id;`,
     async (err, res) => {
       if (err) throw err;
-      console.log(res);
+      //console.log(res);
       const employeesByManager = res.map(
         ({ id, employees }) => id + " " + employees
       );
 
-      //const empsManager = res.map(({ id, employees }) => id + " " + employees);
-      console.log(employeesByManager);
+      //console.log(employeesByManager);
       const { byManager } = await inquirer.prompt([
         {
           type: "list",
@@ -233,8 +229,29 @@ const viewAllEmployeesByManager = () => {
           choices: employeesByManager,
         },
       ]);
-      let temp = byManager.split(" ");
-      console.log(temp[0]);
+      //this holds the employee user selected to search on View All Employees By Manager
+      let byManagerSelected = byManager.split(" ");
+      //console.log(byManagerSelected[0],byManagerSelected[1],byManagerSelected[2]);
+      console.log(byManagerSelected[0]);
+      connection.query(
+        `SELECT employee.id, employee.first_name, employee.last_name, department.name AS department, role.title, CONCAT(emp.first_name, ' ' ,emp.last_name) AS manager
+        FROM employee
+        LEFT JOIN employee emp ON employee.manager_id = emp.id
+        INNER JOIN role ON role.id = employee.role_id
+        INNER JOIN department ON role.department_id = department.id
+        WHERE employee.manager_id = ${byManager[0]};`,
+        async (err, res) => {
+          if (err) throw err;
+          if (res.length > 0) {
+            doConsoleTable(res);
+          } else {
+            console.log("The selected employee has no direct reports");
+          }
+          //console.log(res);
+          //doConsoleTable(res);
+          kickOffPromptQuestionWhatToDo();
+        }
+      );
     }
   );
 };
