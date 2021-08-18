@@ -18,6 +18,7 @@ const connection = mysql.createConnection({
 });
 
 //DATA =====================================================
+
 //Inquirer Prompt Questions
 //Create an array of choices for 1st question "What would you like to do?"
 const questionSelectWhatToDo = [
@@ -49,13 +50,14 @@ const questionEmployeesByDepartment = [
 
 //Create an array of question for user input on View All Employees By Manager
 //if no direct reports, answer: "The selected employee has no direct reports"
-const questionEmployeesByManager = [
-  {
-    type: "input",
-    name: "byManager",
-    message: "Which employee do you want to see direct reports for?",
-  },
-];
+// const questionEmployeesByManager = [
+//   {
+//     type: "list",
+//     name: "byManager",
+//     message: "Which employee do you want to see direct reports for?",
+//     choices: employeesInputArray,
+//   },
+// ];
 
 //Create an array of questions for user input on Add Employee
 const questionEmployeeInfo = [
@@ -196,10 +198,7 @@ const viewAllEmployeesByDept = async () => {
   const { byDepartment } = await inquirer.prompt(questionEmployeesByDepartment);
   console.log("byDepartment: " + byDepartment);
   connection.query(
-    "SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee INNER JOIN role ON role.id = employee.role_id INNER JOIN department ON role.department_id = department.id WHERE department.name=" +
-      "'" +
-      byDepartment +
-      "'",
+    `SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee INNER JOIN role ON role.id = employee.role_id INNER JOIN department ON role.department_id = department.id WHERE department.name = "${byDepartment}"`,
     (err, res) => {
       if (err) throw err;
       doConsoleTable(res);
@@ -209,7 +208,36 @@ const viewAllEmployeesByDept = async () => {
 };
 
 // TODO: Create a function to ...
-function viewAllEmployeesByManager() {}
+const viewAllEmployeesByManager = () => {
+  //const { byManager } = await inquirer.prompt(questionEmployeesByManager);
+  connection.query(
+    `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS employees
+    FROM employee
+    LEFT JOIN employee emp ON employee.manager_id = emp.id
+    INNER JOIN role ON role.id = employee.role_id
+    INNER JOIN department ON role.department_id = department.id;`,
+    async (err, res) => {
+      if (err) throw err;
+      console.log(res);
+      const employeesByManager = res.map(
+        ({ id, employees }) => id + " " + employees
+      );
+
+      //const empsManager = res.map(({ id, employees }) => id + " " + employees);
+      console.log(employeesByManager);
+      const { byManager } = await inquirer.prompt([
+        {
+          type: "list",
+          name: "byManager",
+          message: "Which employee do you want to see direct reports for?",
+          choices: employeesByManager,
+        },
+      ]);
+      let temp = byManager.split(" ");
+      console.log(temp[0]);
+    }
+  );
+};
 
 // TODO: Create a function to ...
 function addEmployee() {}

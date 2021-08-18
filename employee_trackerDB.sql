@@ -41,7 +41,7 @@ SELECT * FROM role;
 
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ("John", "Doe", 1, NULL), ("Mike", "Chan", 2, 1), ("Ashley", "Rodriguez", 2, NULL), ("Kunal", "Singh", 3, NULL), ("Malia", "Brown", 3, 4), ("Tom", "Allen", 4, NULL), ("Duane", "Reade", 1, NULL);
+VALUES ("John", "Doe", 1, NULL), ("Mike", "Chan", 3, 1), ("Ashley", "Rodriguez", 3, NULL), ("Kunal", "Singh", 5, NULL), ("Malia", "Brown", 6, 4), ("Tom", "Allen", 7, NULL), ("Duane", "Reade", 1, NULL);
 
 SELECT * FROM employee;
 
@@ -53,7 +53,20 @@ INNER JOIN department ON role.department_id = department.id;
 
 SELECT employee.id, employee.first_name, employee.last_name, role.title 
 FROM employee
-
+INNER JOIN role ON role.id = employee.role_id
 INNER JOIN department ON role.department_id = department.id WHERE department.name = "Engineering";
 
+-- VIEW BY MANAGER
+SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, CONCAT(emp.first_name, ' ' ,emp.last_name) AS manager
+FROM employee
+LEFT JOIN employee emp ON employee.manager_id = emp.id
+INNER JOIN role ON role.id = employee.role_id
+INNER JOIN department ON role.department_id = department.id
+WHERE employee.manager_id = 4;
 
+-- VIEW BY EMPLOYEES ID FIRST NAME LAST NAME
+SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS employees
+FROM employee
+LEFT JOIN employee emp ON employee.manager_id = emp.id
+INNER JOIN role ON role.id = employee.role_id
+INNER JOIN department ON role.department_id = department.id;
