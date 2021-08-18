@@ -18,7 +18,9 @@ const connection = mysql.createConnection({
 });
 
 //DATA =====================================================
-
+const employeesArray = [];
+let empArray = [];
+//let questionEmployeeInfo = [];
 //Inquirer Prompt Questions
 //Create an array of choices for 1st question "What would you like to do?"
 const questionSelectWhatToDo = [
@@ -47,17 +49,6 @@ const questionEmployeesByDepartment = [
     message: "Which department would you like to see employees for?",
   },
 ];
-
-//Create an array of question for user input on View All Employees By Manager
-//if no direct reports, answer: "The selected employee has no direct reports"
-// const questionEmployeesByManager = [
-//   {
-//     type: "list",
-//     name: "byManager",
-//     message: "Which employee do you want to see direct reports for?",
-//     choices: employeesInputArray,
-//   },
-// ];
 
 //Create an array of questions for user input on Add Employee
 const questionEmployeeInfo = [
@@ -89,16 +80,17 @@ const questionEmployeeInfo = [
     type: "list",
     name: "employeeManager",
     message: "Who is the employee's manager?",
-    //None could be an option!
-    choices: [
-      "John Doe",
-      "Mike Chan",
-      "Ashley Rodriguez",
-      "Kunal Singh",
-      "Malia Brown",
-      "Tom Allen",
-      "Duane Reade",
-    ],
+    // choices: [
+    //   "John Doe",
+    //   "Mike Chan",
+    //   "Ashley Rodriguez",
+    //   "Kunal Singh",
+    //   "Malia Brown",
+    //   "Tom Allen",
+    //   "Duane Reade",
+    //   "None",
+    // ],
+    choices: employeesArray,
   },
   //success, answer: Added employeeFirstName employeeLastName to the database
   //success, View All Employees shows newly added employee results
@@ -232,7 +224,7 @@ const viewAllEmployeesByManager = () => {
       //this holds the employee user selected to search on View All Employees By Manager
       let byManagerSelected = byManager.split(" ");
       //console.log(byManagerSelected[0],byManagerSelected[1],byManagerSelected[2]);
-      console.log(byManagerSelected[0]);
+      //console.log(byManagerSelected[0]);
       connection.query(
         `SELECT employee.id, employee.first_name, employee.last_name, department.name AS department, role.title, CONCAT(emp.first_name, ' ' ,emp.last_name) AS manager
         FROM employee
@@ -247,8 +239,6 @@ const viewAllEmployeesByManager = () => {
           } else {
             console.log("The selected employee has no direct reports");
           }
-          //console.log(res);
-          //doConsoleTable(res);
           kickOffPromptQuestionWhatToDo();
         }
       );
@@ -256,8 +246,75 @@ const viewAllEmployeesByManager = () => {
   );
 };
 
-// TODO: Create a function to ...
-function addEmployee() {}
+function addEmployee() {
+  //this function builds employeesArray which questionEmployeeInfo choices has as its value
+  getEmployees();
+  inquirer.prompt(questionEmployeeInfo).then(function (empInfo) {
+    //console.log("before: ", empInfo);
+    if (empInfo.employeeManager === "None") {
+      empInfo.employeeManager = null;
+    }
+    switch (empInfo.employeeRole) {
+      case "Sales Lead":
+        empInfo.employeeRole = 1;
+        break;
+      case "Salesperson":
+        empInfo.employeeRole = 2;
+        break;
+      case "Lead Engineer":
+        empInfo.employeeRole = 3;
+        break;
+      case "Software Engineer":
+        empInfo.employeeRole = 4;
+        break;
+      case "Account Manager":
+        empInfo.employeeRole = 5;
+        break;
+      case "Accountant":
+        empInfo.employeeRole = 6;
+        break;
+      case "Legal Team Lead":
+        empInfo.employeeRole = 7;
+        break;
+    }
+    //console.log("after: ", empInfo);
+    if (empInfo.employeeManager != null) {
+      const empManager = empInfo.employeeManager.split(" ");
+      //console.log(empManager);
+      connection.query(
+        `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+        VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empInfo.employeeRole}, ${empManager[0]})`,
+        (err, res) => {
+          if (err) throw err;
+          //console.log(res);
+          console.log(
+            "Added " +
+              empInfo.employeeFirstName +
+              empInfo.employeeLastName +
+              " to the database"
+          );
+          kickOffPromptQuestionWhatToDo();
+        }
+      );
+    } else {
+      connection.query(
+        `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+      VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", "${empInfo.employeeRole}", ${empInfo.employeeManager})`,
+        (err, res) => {
+          if (err) throw err;
+          //console.log(res);
+          console.log(
+            "Added " +
+              empInfo.employeeFirstName +
+              empInfo.employeeLastName +
+              " to the database"
+          );
+          kickOffPromptQuestionWhatToDo();
+        }
+      );
+    }
+  });
+}
 
 // TODO: Create a function to ...
 function removeEmployee() {}
@@ -267,6 +324,29 @@ function updateEmployeeRole() {}
 
 // TODO: Create a function to ...
 function updateEmployeeManager() {}
+
+function getEmployees() {
+  connection.query(`SELECT * FROM employee;`, (err, res) => {
+    if (err) throw err;
+    res.forEach(({ id, first_name, last_name, role_id, manager_id }) => {
+      // console.log(
+      //   `${id} -- ${first_name} -- ${last_name} -- ${role_id} -- ${manager_id} -- `
+      // );
+      employeesArray.push(`${id} ${first_name} ${last_name}`);
+    });
+    employeesArray.push("None");
+    //console.log("employeesArray: ---");
+    //console.log(employeesArray);
+    for (let i = 0; i < employeesArray.length; i++) {
+      //console.log(employeesArray[i]);
+      empArray[i] = employeesArray[i].split(" ");
+    }
+    // for (let i = 0; i < empArray.length; i++) {
+    //   console.log(empArray[i]);
+    // }
+    //console.log(empArray);
+  });
+}
 
 function doConsoleTable(response) {
   const table = cTable.getTable(response);

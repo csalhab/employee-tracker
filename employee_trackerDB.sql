@@ -71,3 +71,9 @@ LEFT JOIN employee emp ON employee.manager_id = emp.id
 INNER JOIN role ON role.id = employee.role_id
 INNER JOIN department ON role.department_id = department.id
 WHERE employee.manager_id = 4;
+
+
+
+-- ADD SECTION
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
+VALUES ("David", "Bowie", 6, NULL);
