@@ -19,10 +19,9 @@ const connection = mysql.createConnection({
 
 //DATA =====================================================
 const employeesArray = [];
-const departmentArray = [];
-const roleArray = [];
+const departmentsArray = [];
+const rolesArray = [];
 
-//let questionEmployeeInfo = [];
 //Inquirer Prompt Questions
 //Create an array of choices for 1st question "What would you like to do?"
 const questionSelectWhatToDo = [
@@ -70,15 +69,7 @@ const questionEmployeeInfo = [
     type: "list",
     name: "employeeRole",
     message: "What is the employee's role?",
-    choices: [
-      "Sales Lead",
-      "Salesperson",
-      "Lead Engineer",
-      "Software Engineer",
-      "Account Manager",
-      "Accountant",
-      "Legal Team Lead",
-    ],
+    choices: rolesArray,
   },
   {
     type: "list",
@@ -86,8 +77,6 @@ const questionEmployeeInfo = [
     message: "Who is the employee's manager?",
     choices: employeesArray,
   },
-  //success, answer: Added employeeFirstName employeeLastName to the database
-  //success, View All Employees shows newly added employee results
 ];
 
 //Create an array of questions for user input on Add A Role
@@ -106,16 +95,7 @@ const questionRoleInfo = [
     type: "list",
     name: "newRoleDept",
     message: "What is the deparatment of this role being added?",
-    // choices: [
-    //   "Sales Lead",
-    //   "Salesperson",
-    //   "Lead Engineer",
-    //   "Software Engineer",
-    //   "Account Manager",
-    //   "Accountant",
-    //   "Legal Team Lead",
-    // ],
-    choices: departmentArray,
+    choices: departmentsArray,
   },
 ];
 
@@ -272,40 +252,44 @@ const viewAllEmployeesByManager = () => {
 };
 
 function addEmployee() {
-  //this function builds employeesArray which questionEmployeeInfo choices has as its value
+  //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
   getEmployees();
+  //this function builds rolesArray which questionEmployeeInfo employeeRole choices has as it values
+  getRoles();
   inquirer.prompt(questionEmployeeInfo).then(function (empInfo) {
+    console.log(empInfo);
+    const empRole = empInfo.employeeRole.split(" ");
     if (empInfo.employeeManager === "None") {
       empInfo.employeeManager = null;
     }
-    switch (empInfo.employeeRole) {
-      case "Sales Lead":
-        empInfo.employeeRole = 1;
-        break;
-      case "Salesperson":
-        empInfo.employeeRole = 2;
-        break;
-      case "Lead Engineer":
-        empInfo.employeeRole = 3;
-        break;
-      case "Software Engineer":
-        empInfo.employeeRole = 4;
-        break;
-      case "Account Manager":
-        empInfo.employeeRole = 5;
-        break;
-      case "Accountant":
-        empInfo.employeeRole = 6;
-        break;
-      case "Legal Team Lead":
-        empInfo.employeeRole = 7;
-        break;
-    }
+    // switch (empInfo.employeeRole) {
+    //   case "Sales Lead":
+    //     empInfo.employeeRole = 1;
+    //     break;
+    //   case "Salesperson":
+    //     empInfo.employeeRole = 2;
+    //     break;
+    //   case "Lead Engineer":
+    //     empInfo.employeeRole = 3;
+    //     break;
+    //   case "Software Engineer":
+    //     empInfo.employeeRole = 4;
+    //     break;
+    //   case "Account Manager":
+    //     empInfo.employeeRole = 5;
+    //     break;
+    //   case "Accountant":
+    //     empInfo.employeeRole = 6;
+    //     break;
+    //   case "Legal Team Lead":
+    //     empInfo.employeeRole = 7;
+    //     break;
+    // }
     if (empInfo.employeeManager != null) {
       const empManager = empInfo.employeeManager.split(" ");
       connection.query(
         `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-        VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empInfo.employeeRole}, ${empManager[0]})`,
+        VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empRole[0]}, ${empManager[0]})`,
         (err, res) => {
           if (err) throw err;
           console.log(
@@ -320,7 +304,7 @@ function addEmployee() {
     } else {
       connection.query(
         `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-      VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empInfo.employeeRole}, ${empInfo.employeeManager})`,
+      VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empRole[0]}, ${empInfo.employeeManager})`,
         (err, res) => {
           if (err) throw err;
           console.log(
@@ -388,7 +372,7 @@ function getRoles() {
   connection.query(`SELECT * FROM role;`, (err, res) => {
     if (err) throw err;
     res.forEach(({ id, title }) => {
-      roleArray.push(`${id} ${title}`);
+      rolesArray.push(`${id} ${title}`);
     });
   });
 }
@@ -396,7 +380,7 @@ function getDepartments() {
   connection.query(`SELECT * FROM department;`, (err, res) => {
     if (err) throw err;
     res.forEach(({ id, name }) => {
-      departmentArray.push(`${id} ${name}`);
+      departmentsArray.push(`${id} ${name}`);
     });
   });
 }
