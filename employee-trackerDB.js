@@ -262,29 +262,6 @@ function addEmployee() {
     if (empInfo.employeeManager === "None") {
       empInfo.employeeManager = null;
     }
-    // switch (empInfo.employeeRole) {
-    //   case "Sales Lead":
-    //     empInfo.employeeRole = 1;
-    //     break;
-    //   case "Salesperson":
-    //     empInfo.employeeRole = 2;
-    //     break;
-    //   case "Lead Engineer":
-    //     empInfo.employeeRole = 3;
-    //     break;
-    //   case "Software Engineer":
-    //     empInfo.employeeRole = 4;
-    //     break;
-    //   case "Account Manager":
-    //     empInfo.employeeRole = 5;
-    //     break;
-    //   case "Accountant":
-    //     empInfo.employeeRole = 6;
-    //     break;
-    //   case "Legal Team Lead":
-    //     empInfo.employeeRole = 7;
-    //     break;
-    // }
     if (empInfo.employeeManager != null) {
       const empManager = empInfo.employeeManager.split(" ");
       connection.query(
