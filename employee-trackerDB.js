@@ -144,6 +144,16 @@ const questionUpdateEmployeeRole = [
   //success, View All Employees shows newly updated employee results
 ];
 
+//Create an array of question for user input on Delete Employee
+const questionDeleteEmployee = [
+  {
+    type: "list",
+    name: "employeeNameDelete",
+    message: "Which employee do you want to delete?",
+    choices: employeesArray,
+  },
+];
+
 //Create an array of question for user input on Update Employee's Manager
 const questionUpdateEmployeeManager = [
   {
@@ -341,7 +351,34 @@ const addRole = async () => {
 };
 
 // TODO: Create a function to ...
-function removeEmployee() {}
+const removeEmployee = async () => {
+  console.log("inside removeEmployee!!!");
+  //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
+  getEmployees();
+  console.log(employeesArray);
+  const { employeeNameDelete } = await inquirer.prompt(questionDeleteEmployee);
+  console.log("employee name to be deleted:");
+  console.log(employeeNameDelete);
+
+  const empName = employeeNameDelete.split(" ");
+  console.log(empName[0]);
+  console.log(empName[1]);
+  /* 
+    ? is a placeholder for values to be escaped & its value is an array
+    single use is just value in the array
+    multiple ?, array then holds in order the values 
+
+  */
+  connection.query(
+    `DELETE FROM employee WHERE id = ?`,
+    [empName[0]],
+    (err, res) => {
+      if (err) throw err;
+      console.log("Deleted " + employeeNameDelete + " from the database.\n");
+      kickOffPromptQuestionWhatToDo();
+    }
+  );
+};
 
 const updateEmployeeRole = async () => {
   console.log("inside updateEmpRole!!!");
