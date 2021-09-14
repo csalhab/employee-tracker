@@ -79,6 +79,22 @@ const questionEmployeeInfo = [
   },
 ];
 
+//Create an array of questions for user input on New Manager for Employee
+const questionNewManager = [
+  {
+    type: "list",
+    name: "employeeChangeManager",
+    message: "Which employee do you want to change their manager?",
+    choices: employeesArray,
+  },
+  {
+    type: "list",
+    name: "managerName",
+    message: "Who is the new manager?",
+    choices: employeesArray,
+  },
+];
+
 //Create an array of questions for user input on Add A Role
 const questionRoleInfo = [
   {
@@ -350,7 +366,6 @@ const addRole = async () => {
   );
 };
 
-// TODO: Create a function to ...
 const removeEmployee = async () => {
   console.log("inside removeEmployee!!!");
   //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
@@ -424,8 +439,50 @@ const updateEmployeeRole = async () => {
   );
 };
 
-// TODO: Create a function to ...
-function updateEmployeeManager() {}
+const updateEmployeeManager = async () => {
+  console.log("inside updateEmployeeManager!!!");
+  //this function builds employeesArray
+  getEmployees();
+  console.log(employeesArray);
+  //this function builds rolesArray
+  getRoles();
+  console.log(rolesArray);
+  const { employeeChangeManager, managerName } = await inquirer.prompt(
+    questionNewManager
+  );
+  console.log("employee name whose manager is to be update:");
+  console.log(employeeChangeManager);
+  console.log("employee new manager is:");
+  console.log(managerName);
+
+  const empName = employeeChangeManager.split(" ");
+  const empManager = managerName.split(" ");
+  console.log(empName[0]);
+  console.log(empName[1]);
+  console.log(empManager[0]);
+  console.log(empManager[1]);
+  /* 
+    ? is a placeholder for values to be escaped & its value is an array
+    single use is just value in the array
+    multiple ?, array then holds in order the values 
+
+  */
+  connection.query(
+    `UPDATE employee SET manager_id = ? WHERE id = ?`,
+    [empManager[0], empName[0]],
+    (err, res) => {
+      if (err) throw err;
+      console.log(
+        "\nUpdated " +
+          empName +
+          " to have a new manager whose name is: " +
+          empManager +
+          " in the database.\n"
+      );
+      kickOffPromptQuestionWhatToDo();
+    }
+  );
+};
 
 function getRoles() {
   connection.query(`SELECT * FROM role;`, (err, res) => {
