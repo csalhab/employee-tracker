@@ -18,9 +18,9 @@ const connection = mysql.createConnection({
 });
 
 //DATA =====================================================
-const employeesArray = [];
+let employeesArray = [];
 const departmentsArray = [];
-const rolesArray = [];
+let rolesArray = [];
 
 //Inquirer Prompt Questions
 //Create an array of choices for 1st question "What would you like to do?"
@@ -114,29 +114,31 @@ const questionUpdateEmployeeRole = [
     type: "list",
     name: "employeeFirstNameUpdateRole",
     message: "Which employee's role do you want to update?",
-    choices: [
-      "John Doe",
-      "Mike Chan",
-      "Ashley Rodriguez",
-      "Kunal Singh",
-      "Malia Brown",
-      "Tom Allen",
-      "Duane Reade",
-    ],
+    // choices: [
+    //   "John Doe",
+    //   "Mike Chan",
+    //   "Ashley Rodriguez",
+    //   "Kunal Singh",
+    //   "Malia Brown",
+    //   "Tom Allen",
+    //   "Duane Reade",
+    // ],
+    choices: employeesArray,
   },
   {
     type: "list",
     name: "employeeRoleUpdateRole",
     message: "Which role do you want to assign the selected employee?",
-    choices: [
-      "Sales Lead",
-      "Salesperson",
-      "Lead Engineer",
-      "Software Engineer",
-      "Account Manager",
-      "Accountant",
-      "Legal Team Lead",
-    ],
+    // choices: [
+    //   "Sales Lead",
+    //   "Salesperson",
+    //   "Lead Engineer",
+    //   "Software Engineer",
+    //   "Account Manager",
+    //   "Accountant",
+    //   "Legal Team Lead",
+    // ],
+    choices: rolesArray,
   },
   //success, answer: Updated employee's role
   //success, View All Employees shows newly updated employee results
@@ -148,29 +150,31 @@ const questionUpdateEmployeeManager = [
     type: "list",
     name: "employeeNameUpdateManager",
     message: "Which employee's manager do you want to update?",
-    choices: [
-      "John Doe",
-      "Mike Chan",
-      "Ashley Rodriguez",
-      "Kunal Singh",
-      "Malia Brown",
-      "Tom Allen",
-      "Duane Reade",
-    ],
+    // choices: [
+    //   "John Doe",
+    //   "Mike Chan",
+    //   "Ashley Rodriguez",
+    //   "Kunal Singh",
+    //   "Malia Brown",
+    //   "Tom Allen",
+    //   "Duane Reade",
+    // ],
+    choices: employeesArray,
   },
   {
     type: "list",
     name: "employeeUpdateManager",
     message: "Which manager do you want to assign the selected employee?",
-    choices: [
-      "Sales Lead",
-      "Salesperson",
-      "Lead Engineer",
-      "Software Engineer",
-      "Account Manager",
-      "Accountant",
-      "Legal Team Lead",
-    ],
+    // choices: [
+    //   "Sales Lead",
+    //   "Salesperson",
+    //   "Lead Engineer",
+    //   "Software Engineer",
+    //   "Account Manager",
+    //   "Accountant",
+    //   "Legal Team Lead",
+    // ],
+    choices: employeesArray,
   },
   //success, answer: Updated employee's manager
   //success, View All Employees shows newly updated employee results
@@ -339,8 +343,49 @@ const addRole = async () => {
 // TODO: Create a function to ...
 function removeEmployee() {}
 
-// TODO: Create a function to ...
-function updateEmployeeRole() {}
+const updateEmployeeRole = async () => {
+  console.log("inside updateEmpRole!!!");
+  //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
+  getEmployees();
+  console.log(employeesArray);
+  //this function builds rolesArray which questionEmployeeInfo employeeRole choices has as it values
+  getRoles();
+  console.log(rolesArray);
+  const { employeeFirstNameUpdateRole, employeeRoleUpdateRole } =
+    await inquirer.prompt(questionUpdateEmployeeRole);
+  console.log("employee name whose role is to be update:");
+  console.log(employeeFirstNameUpdateRole);
+  console.log("role employee is now updated to:");
+  console.log(employeeRoleUpdateRole);
+
+  const empName = employeeFirstNameUpdateRole.split(" ");
+  const empRole = employeeRoleUpdateRole.split(" ");
+  console.log(empName[0]);
+  console.log(empName[1]);
+  console.log(empRole[0]);
+  console.log(empRole[1]);
+  /* 
+    ? is a placeholder for values to be escaped & its value is an array
+    single use is just value in the array
+    multiple ?, array then holds in order the values 
+
+  */
+  connection.query(
+    `UPDATE employee SET role_id = ? WHERE id = ?`,
+    [empRole[0], empName[0]],
+    (err, res) => {
+      if (err) throw err;
+      console.log(
+        "\nUpdated " +
+          empName +
+          " to new role of " +
+          empRole +
+          " in the database.\n"
+      );
+      kickOffPromptQuestionWhatToDo();
+    }
+  );
+};
 
 // TODO: Create a function to ...
 function updateEmployeeManager() {}
@@ -370,6 +415,7 @@ function getEmployees() {
     });
     employeesArray.push("None");
   });
+  console.log("getEmployees() results: ", employeesArray);
 }
 
 function doConsoleTable(response) {

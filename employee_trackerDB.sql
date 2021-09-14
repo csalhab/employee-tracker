@@ -76,4 +76,9 @@ WHERE employee.manager_id = 4;
 
 -- ADD SECTION
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ("David", "Bowie", 6, NULL);
+VALUES ("Jake", "Mars", 6, NULL);
+
+
+
+-- UPDATE SECTION
+UPDATE employee SET role_id = WHERE id =
