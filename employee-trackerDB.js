@@ -33,6 +33,8 @@ const questionSelectWhatToDo = [
       "View All Employees",
       "View All Employees By Department",
       "View All Employees By Manager",
+      "View All Roles",
+      "View All Departments",
       "Add Employee",
       "Add A Role",
       "Add A Department",
@@ -176,30 +178,12 @@ const questionUpdateEmployeeManager = [
     type: "list",
     name: "employeeNameUpdateManager",
     message: "Which employee's manager do you want to update?",
-    // choices: [
-    //   "John Doe",
-    //   "Mike Chan",
-    //   "Ashley Rodriguez",
-    //   "Kunal Singh",
-    //   "Malia Brown",
-    //   "Tom Allen",
-    //   "Duane Reade",
-    // ],
     choices: employeesArray,
   },
   {
     type: "list",
     name: "employeeUpdateManager",
     message: "Which manager do you want to assign the selected employee?",
-    // choices: [
-    //   "Sales Lead",
-    //   "Salesperson",
-    //   "Lead Engineer",
-    //   "Software Engineer",
-    //   "Account Manager",
-    //   "Accountant",
-    //   "Legal Team Lead",
-    // ],
     choices: employeesArray,
   },
   //success, answer: Updated employee's manager
@@ -226,19 +210,48 @@ function viewAllEmployees() {
   );
 }
 
-const viewAllEmployeesByDept = async () => {
-  const { byDepartment } = await inquirer.prompt(questionEmployeesByDepartment);
+function viewAllRoles() {
   connection.query(
-    `SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee INNER JOIN role ON role.id = employee.role_id INNER JOIN department ON role.department_id = department.id WHERE department.name = "${byDepartment}"`,
+    "SELECT role.id, role.title, role.salary, department.name AS department FROM role INNER JOIN department ON department.id = role.department_id;",
     (err, res) => {
       if (err) throw err;
       doConsoleTable(res);
       kickOffPromptQuestionWhatToDo();
     }
   );
+}
+
+function viewAllDepartments() {
+  connection.query(
+    "SELECT department.id, department.name FROM department;",
+    (err, res) => {
+      if (err) throw err;
+      doConsoleTable(res);
+      kickOffPromptQuestionWhatToDo();
+    }
+  );
+}
+
+const viewAllEmployeesByDept = async () => {
+  const { byDepartment } = await inquirer.prompt(questionEmployeesByDepartment);
+  connection.query(
+    `SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee INNER JOIN role ON role.id = employee.role_id INNER JOIN department ON role.department_id = department.id WHERE department.name = "${byDepartment}"`,
+    (err, res) => {
+      if (err) throw err;
+      if (res.length > 0) {
+        console.table("res: " + res);
+        doConsoleTable(res);
+      } else {
+        console.log(
+          "\nThere are no employees in that department, that department doesn't exist.\n"
+        );
+      }
+      kickOffPromptQuestionWhatToDo();
+    }
+  );
 };
 
-const viewAllEmployeesByManager = () => {
+const viewAllEmployeesByManager = async () => {
   connection.query(
     `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS employees
     FROM employee
@@ -267,7 +280,7 @@ const viewAllEmployeesByManager = () => {
         INNER JOIN role ON role.id = employee.role_id
         INNER JOIN department ON role.department_id = department.id
         WHERE employee.manager_id = ${byManager[0]};`,
-        async (err, res) => {
+        (err, res) => {
           if (err) throw err;
           if (res.length > 0) {
             doConsoleTable(res);
@@ -281,51 +294,92 @@ const viewAllEmployeesByManager = () => {
   );
 };
 
-function addEmployee() {
+const addEmployee = async () => {
   //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
-  getEmployees();
+  await getEmployees();
   //this function builds rolesArray which questionEmployeeInfo employeeRole choices has as it values
-  getRoles();
-  inquirer.prompt(questionEmployeeInfo).then(function (empInfo) {
-    console.log(empInfo);
-    const empRole = empInfo.employeeRole.split(" ");
-    if (empInfo.employeeManager === "None") {
-      empInfo.employeeManager = null;
-    }
-    if (empInfo.employeeManager != null) {
-      const empManager = empInfo.employeeManager.split(" ");
-      connection.query(
-        `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-        VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empRole[0]}, ${empManager[0]})`,
-        (err, res) => {
-          if (err) throw err;
-          console.log(
-            "\nAdded " +
-              empInfo.employeeFirstName +
-              empInfo.employeeLastName +
-              " to the database\n"
-          );
-          kickOffPromptQuestionWhatToDo();
-        }
-      );
-    } else {
-      connection.query(
-        `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-      VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empRole[0]}, ${empInfo.employeeManager})`,
-        (err, res) => {
-          if (err) throw err;
-          console.log(
-            "\nAdded " +
-              empInfo.employeeFirstName +
-              empInfo.employeeLastName +
-              " to the database\n"
-          );
-          kickOffPromptQuestionWhatToDo();
-        }
-      );
-    }
-  });
-}
+  await getRoles();
+  //inquirer.prompt(questionEmployeeInfo).then(function (empInfo) {
+  const { employeeFirstName, employeeLastName, employeeRole, employeeManager } =
+    await inquirer.prompt(questionEmployeeInfo);
+  const empRole = employeeRole.split(" ");
+  let empManager;
+  if (employeeManager === "None") {
+    empManager = null;
+  }
+
+  if (empManager !== null) {
+    empManager = employeeManager.split(" ");
+    connection.query(
+      `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+        VALUES ("${employeeFirstName}", "${employeeLastName}", ${empRole[0]}, ${empManager[0]})`,
+      (err, res) => {
+        if (err) throw err;
+        console.log(
+          "\nAdded " +
+            employeeFirstName +
+            employeeLastName +
+            " to the database\n"
+        );
+        kickOffPromptQuestionWhatToDo();
+      }
+    );
+  } else {
+    connection.query(
+      `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+      VALUES ("${employeeFirstName}", "${employeeLastName}", ${empRole[0]}, ${empManager})`,
+      (err, res) => {
+        if (err) throw err;
+        console.log(
+          "\nAdded " +
+            employeeFirstName +
+            employeeLastName +
+            " to the database\n"
+        );
+        kickOffPromptQuestionWhatToDo();
+      }
+    );
+  }
+
+  //   //console.log(empInfo);
+  //   const empRole = empInfo.employeeRole.split(" ");
+  //   if (empInfo.employeeManager === "None") {
+  //     empInfo.employeeManager = null;
+  //   }
+  //   if (empInfo.employeeManager != null) {
+  //     const empManager = empInfo.employeeManager.split(" ");
+  //     connection.query(
+  //       `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+  //     VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empRole[0]}, ${empManager[0]})`,
+  //       (err, res) => {
+  //         if (err) throw err;
+  //         console.log(
+  //           "\nAdded " +
+  //             empInfo.employeeFirstName +
+  //             empInfo.employeeLastName +
+  //             " to the database\n"
+  //         );
+  //         kickOffPromptQuestionWhatToDo();
+  //       }
+  //     );
+  //   } else {
+  //     connection.query(
+  //       `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+  //   VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empRole[0]}, ${empInfo.employeeManager})`,
+  //       (err, res) => {
+  //         if (err) throw err;
+  //         console.log(
+  //           "\nAdded " +
+  //             empInfo.employeeFirstName +
+  //             empInfo.employeeLastName +
+  //             " to the database\n"
+  //         );
+  //         kickOffPromptQuestionWhatToDo();
+  //       }
+  //     );
+  //   }
+  // });
+};
 
 const addDepartment = async () => {
   const { newDeptTitle } = await inquirer.prompt([
@@ -348,7 +402,7 @@ const addDepartment = async () => {
 
 const addRole = async () => {
   //this retrieves all departments from the db
-  getDepartments();
+  await getDepartments();
   const { newRoleTitle, newRoleSalary, newRoleDept } = await inquirer.prompt(
     questionRoleInfo
   );
@@ -367,149 +421,187 @@ const addRole = async () => {
 };
 
 const removeEmployee = async () => {
-  console.log("inside removeEmployee!!!");
   //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
-  getEmployees();
-  console.log(employeesArray);
+  await getEmployees();
+  //console.log(employeesArray);
   const { employeeNameDelete } = await inquirer.prompt(questionDeleteEmployee);
-  console.log("employee name to be deleted:");
-  console.log(employeeNameDelete);
+  //console.log("employee name to be deleted:");
+  //console.log(employeeNameDelete);
+  let empName;
+  if (employeeNameDelete !== "None") {
+    empName = employeeNameDelete.split(" ");
+    //console.log(empName[0]);
+    //console.log(empName[1]);
 
-  const empName = employeeNameDelete.split(" ");
-  console.log(empName[0]);
-  console.log(empName[1]);
-  /* 
-    ? is a placeholder for values to be escaped & its value is an array
-    single use is just value in the array
-    multiple ?, array then holds in order the values 
+    /* 
+      ? is a placeholder for values to be escaped & its value is an array
+      single use is just value in the array
+      multiple ?, array then holds in order the values 
 
-  */
-  connection.query(
-    `DELETE FROM employee WHERE id = ?`,
-    [empName[0]],
-    (err, res) => {
-      if (err) throw err;
-      console.log("Deleted " + employeeNameDelete + " from the database.\n");
-      kickOffPromptQuestionWhatToDo();
-    }
-  );
+    */
+    connection.query(
+      `DELETE FROM employee WHERE id = ?`,
+      [empName[0]],
+      (err, res) => {
+        if (err) throw err;
+        console.log(
+          "\nDeleted " + employeeNameDelete + " from the database.\n"
+        );
+        kickOffPromptQuestionWhatToDo();
+      }
+    );
+  } else {
+    kickOffPromptQuestionWhatToDo();
+  }
 };
 
 const updateEmployeeRole = async () => {
   console.log("inside updateEmpRole!!!");
   //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
-  getEmployees();
-  console.log(employeesArray);
+  await getEmployees();
   //this function builds rolesArray which questionEmployeeInfo employeeRole choices has as it values
-  getRoles();
-  console.log(rolesArray);
+  await getRoles();
+  //console.log(rolesArray);
   const { employeeFirstNameUpdateRole, employeeRoleUpdateRole } =
     await inquirer.prompt(questionUpdateEmployeeRole);
-  console.log("employee name whose role is to be update:");
-  console.log(employeeFirstNameUpdateRole);
-  console.log("role employee is now updated to:");
-  console.log(employeeRoleUpdateRole);
+  //console.log("employee name whose role is to be update:");
+  //console.log(employeeFirstNameUpdateRole);
+  //console.log("role employee is now updated to:");
+  //console.log(employeeRoleUpdateRole);
 
-  const empName = employeeFirstNameUpdateRole.split(" ");
-  const empRole = employeeRoleUpdateRole.split(" ");
-  console.log(empName[0]);
-  console.log(empName[1]);
-  console.log(empRole[0]);
-  console.log(empRole[1]);
-  /* 
-    ? is a placeholder for values to be escaped & its value is an array
-    single use is just value in the array
-    multiple ?, array then holds in order the values 
+  if (
+    employeeFirstNameUpdateRole === "None" ||
+    employeeRoleUpdateRole === "None"
+  ) {
+    kickOffPromptQuestionWhatToDo();
+  } else {
+    const empName = employeeFirstNameUpdateRole.split(" ");
+    const empRole = employeeRoleUpdateRole.split(" ");
+    //console.log(empName[0]);
+    //console.log(empName[1]);
+    //console.log(empRole[0]);
+    //console.log(empRole[1]);
+    /* 
+      ? is a placeholder for values to be escaped & its value is an array
+      single use is just value in the array
+      multiple ?, array then holds in order the values 
 
-  */
-  connection.query(
-    `UPDATE employee SET role_id = ? WHERE id = ?`,
-    [empRole[0], empName[0]],
-    (err, res) => {
-      if (err) throw err;
-      console.log(
-        "\nUpdated " +
-          empName +
-          " to new role of " +
-          empRole +
-          " in the database.\n"
-      );
-      kickOffPromptQuestionWhatToDo();
-    }
-  );
+    */
+    connection.query(
+      `UPDATE employee SET role_id = ? WHERE id = ?`,
+      [empRole[0], empName[0]],
+      (err, res) => {
+        if (err) throw err;
+        console.log(
+          "\nUpdated " +
+            empName +
+            " to new role of " +
+            empRole +
+            " in the database.\n"
+        );
+        kickOffPromptQuestionWhatToDo();
+      }
+    );
+  }
 };
 
 const updateEmployeeManager = async () => {
   console.log("inside updateEmployeeManager!!!");
   //this function builds employeesArray
-  getEmployees();
-  console.log(employeesArray);
+  await getEmployees();
+  //console.log(employeesArray);
   //this function builds rolesArray
-  getRoles();
-  console.log(rolesArray);
+  await getRoles();
+  //console.log(rolesArray);
   const { employeeChangeManager, managerName } = await inquirer.prompt(
     questionNewManager
   );
-  console.log("employee name whose manager is to be update:");
-  console.log(employeeChangeManager);
-  console.log("employee new manager is:");
-  console.log(managerName);
+  //console.log("employee name whose manager is to be update:");
+  //console.log(employeeChangeManager);
+  //console.log("employee new manager is:");
+  //console.log(managerName);
 
-  const empName = employeeChangeManager.split(" ");
-  const empManager = managerName.split(" ");
-  console.log(empName[0]);
-  console.log(empName[1]);
-  console.log(empManager[0]);
-  console.log(empManager[1]);
-  /* 
-    ? is a placeholder for values to be escaped & its value is an array
-    single use is just value in the array
-    multiple ?, array then holds in order the values 
+  if (employeeChangeManager === "None") {
+    kickOffPromptQuestionWhatToDo();
+  } else if (managerName === "None") {
+    const empName = employeeChangeManager.split(" ");
+    //let empManager = managerName.split(" ");
+    //console.log(empManager[0]); //id
+    //console.log(empManager[1]); //name
+    //console.log(empName[0]); //id
+    //console.log(empName[1]); //name
+    connection.query(
+      `UPDATE employee SET manager_id = ? WHERE id = ?`,
+      [null, empName[0]],
+      (err, res) => {
+        if (err) throw err;
+        console.log("\nUpdated " + empName + " with no manager now.\n");
+        kickOffPromptQuestionWhatToDo();
+      }
+    );
+  } else {
+    const empName = employeeChangeManager.split(" ");
+    const empManager = managerName.split(" ");
+    /* 
+      ? is a placeholder for values to be escaped & its value is an array
+      single use is just value in the array
+      multiple ?, array then holds in order the values 
 
-  */
-  connection.query(
-    `UPDATE employee SET manager_id = ? WHERE id = ?`,
-    [empManager[0], empName[0]],
-    (err, res) => {
-      if (err) throw err;
-      console.log(
-        "\nUpdated " +
-          empName +
-          " to have a new manager whose name is: " +
-          empManager +
-          " in the database.\n"
-      );
-      kickOffPromptQuestionWhatToDo();
-    }
-  );
+    */
+    connection.query(
+      `UPDATE employee SET manager_id = ? WHERE id = ?`,
+      [empManager[0], empName[0]],
+      (err, res) => {
+        if (err) throw err;
+        console.log(
+          "\nUpdated " +
+            empName +
+            " to have a new manager whose name is: " +
+            empManager +
+            " in the database.\n"
+        );
+        kickOffPromptQuestionWhatToDo();
+      }
+    );
+  }
 };
 
 function getRoles() {
-  connection.query(`SELECT * FROM role;`, (err, res) => {
-    if (err) throw err;
-    res.forEach(({ id, title }) => {
-      rolesArray.push(`${id} ${title}`);
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM role;`, (err, res) => {
+      if (err) throw err;
+      res.forEach(({ id, title }) => {
+        rolesArray.push(`${id} ${title}`);
+      });
+      resolve(rolesArray);
     });
   });
 }
+
 function getDepartments() {
-  connection.query(`SELECT * FROM department;`, (err, res) => {
-    if (err) throw err;
-    res.forEach(({ id, name }) => {
-      departmentsArray.push(`${id} ${name}`);
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM department;`, (err, res) => {
+      if (err) throw err;
+      res.forEach(({ id, name }) => {
+        departmentsArray.push(`${id} ${name}`);
+      });
+      resolve(departmentsArray);
     });
   });
 }
 
 function getEmployees() {
-  connection.query(`SELECT * FROM employee;`, (err, res) => {
-    if (err) throw err;
-    res.forEach(({ id, first_name, last_name }) => {
-      employeesArray.push(`${id} ${first_name} ${last_name}`);
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM employee;`, (err, res) => {
+      if (err) throw err;
+      res.forEach(({ id, first_name, last_name }) => {
+        employeesArray.push(`${id} ${first_name} ${last_name}`);
+      });
+      employeesArray.push("None");
+      resolve(employeesArray);
+      //console.log("getEmployees() results: ", employeesArray);
     });
-    employeesArray.push("None");
   });
-  console.log("getEmployees() results: ", employeesArray);
 }
 
 function doConsoleTable(response) {
@@ -546,6 +638,10 @@ const kickOffPromptQuestionWhatToDo = async () => {
     case "View All Employees By Manager":
       viewAllEmployeesByManager();
       return;
+    case "View All Roles":
+      return viewAllRoles();
+    case "View All Departments":
+      return viewAllDepartments();
     case "Add A Department":
       addDepartment();
       return;
