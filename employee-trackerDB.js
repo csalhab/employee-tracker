@@ -381,6 +381,44 @@ const addEmployee = async () => {
   // });
 };
 
+// const addDepartment = async () => {
+//   const { newDeptTitle } = await inquirer.prompt([
+//     {
+//       type: "input",
+//       name: "newDeptTitle",
+//       message: "What is the title of the department to be added?",
+//     },
+//   ]);
+//   if (newDeptTitle === "") {
+//     console.log(
+//       "No department added, requires a name value for department to be provided."
+//     );
+//   } else {
+//     await getDepartments();
+//     let tempDeptArray;
+//     let deptAlreadyExists = false;
+//     for (let i = 0; i < departmentsArray.length; i++) {
+//       tempDeptArray = departmentsArray[i].split(" ");
+//       if (newDeptTitle === tempDeptArray[1]) {
+//         deptAlreadyExists = true;
+//       }
+//     }
+//     if (deptAlreadyExists) {
+//       console.log("Department already exists.", newDeptTitle);
+//     } else {
+//       connection.query(
+//         `INSERT INTO department (name)
+//         VALUES ("${newDeptTitle}")`,
+//         (err, res) => {
+//           if (err) throw err;
+//           console.log("\nAdded " + newDeptTitle + " to the database.\n");
+//         }
+//       );
+//     }
+//   }
+//   kickOffPromptQuestionWhatToDo();
+// };
+
 const addDepartment = async () => {
   const { newDeptTitle } = await inquirer.prompt([
     {
@@ -389,15 +427,32 @@ const addDepartment = async () => {
       message: "What is the title of the department to be added?",
     },
   ]);
-  connection.query(
-    `INSERT INTO department (name) 
-    VALUES ("${newDeptTitle}")`,
-    (err, res) => {
-      if (err) throw err;
-      console.log("\nAdded " + newDeptTitle + " to the database.\n");
-      kickOffPromptQuestionWhatToDo();
+  await getDepartments();
+  let tempDeptArray;
+  let deptAlreadyExists = false;
+  for (let i = 0; i < departmentsArray.length; i++) {
+    tempDeptArray = departmentsArray[i].split(" ");
+    if (newDeptTitle === tempDeptArray[1]) {
+      deptAlreadyExists = true;
     }
-  );
+  }
+  if (newDeptTitle === "") {
+    console.log(
+      "No department added, requires a name value for department to be provided."
+    );
+  } else if (deptAlreadyExists) {
+    console.log("Department already exists.", newDeptTitle);
+  } else {
+    connection.query(
+      `INSERT INTO department (name)
+      VALUES ("${newDeptTitle}")`,
+      (err, res) => {
+        if (err) throw err;
+      }
+    );
+    console.log("\nAdded " + newDeptTitle + " to the database.\n");
+  }
+  kickOffPromptQuestionWhatToDo();
 };
 
 const addRole = async () => {
