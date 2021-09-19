@@ -41,6 +41,7 @@ const questionSelectWhatToDo = [
       "Remove Employee",
       "Update Employee Role",
       "Update Employee Manager",
+      "Update Role Department",
       "EXIT",
     ],
   },
@@ -131,7 +132,7 @@ const questionUpdateEmployeeRole = [
   {
     type: "list",
     name: "employeeFirstNameUpdateRole",
-    message: "Which employee's role do you want to update?",
+    message: "Which employee do you want to update their role?",
     // choices: [
     //   "John Doe",
     //   "Mike Chan",
@@ -188,6 +189,22 @@ const questionUpdateEmployeeManager = [
   },
   //success, answer: Updated employee's manager
   //success, View All Employees shows newly updated employee results
+];
+
+//Create an array of question for user input on Update Role Department
+const questionUpdateRoleDept = [
+  {
+    type: "list",
+    name: "updateRole",
+    message: "Which role do you want to update its department?",
+    choices: rolesArray,
+  },
+  {
+    type: "list",
+    name: "updateDept",
+    message: "Which deparment do you want to assign the selected role?",
+    choices: departmentsArray,
+  },
 ];
 
 //FUNCTIONS ================================================
@@ -295,6 +312,7 @@ const viewAllEmployeesByManager = async () => {
 };
 
 const addEmployee = async () => {
+  console.log("inside addEmployee..");
   //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
   await getEmployees();
   //this function builds rolesArray which questionEmployeeInfo employeeRole choices has as it values
@@ -304,120 +322,56 @@ const addEmployee = async () => {
     await inquirer.prompt(questionEmployeeInfo);
   const empRole = employeeRole.split(" ");
   let empManager;
-  if (employeeManager === "None") {
-    empManager = null;
+  let shouldContinue = true;
+  if (employeeFirstName === "" || employeeLastName === "") {
+    shouldContinue = false;
   }
-
-  if (empManager !== null) {
-    empManager = employeeManager.split(" ");
-    connection.query(
-      `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-        VALUES ("${employeeFirstName}", "${employeeLastName}", ${empRole[0]}, ${empManager[0]})`,
-      (err, res) => {
-        if (err) throw err;
-        console.log(
-          "\nAdded " +
-            employeeFirstName +
-            employeeLastName +
-            " to the database\n"
-        );
-        kickOffPromptQuestionWhatToDo();
-      }
+  if (!shouldContinue) {
+    console.log(
+      "In order to add a new employee, please provide first name and last name.\n"
     );
+    kickOffPromptQuestionWhatToDo();
   } else {
-    connection.query(
-      `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-      VALUES ("${employeeFirstName}", "${employeeLastName}", ${empRole[0]}, ${empManager})`,
-      (err, res) => {
-        if (err) throw err;
-        console.log(
-          "\nAdded " +
-            employeeFirstName +
-            employeeLastName +
-            " to the database\n"
-        );
-        kickOffPromptQuestionWhatToDo();
-      }
-    );
+    //if no manager, manager_id is null
+    if (employeeManager === "None") {
+      console.log("Employee has no Manager");
+      connection.query(
+        `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+          VALUES ("${employeeFirstName}", "${employeeLastName}", ${
+          empRole[0]
+        }, ${null})`,
+        (err, res) => {
+          if (err) throw err;
+          console.log(
+            "\nAdded " +
+              employeeFirstName +
+              employeeLastName +
+              " to the database\n"
+          );
+          kickOffPromptQuestionWhatToDo();
+        }
+      );
+    } else {
+      //has a manager, manager_id has an employee value
+      empManager = employeeManager.split(" ");
+      console.log("Employee Manager is: " + empManager[1]);
+      connection.query(
+        `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+          VALUES ("${employeeFirstName}", "${employeeLastName}", ${empRole[0]}, ${empManager[0]})`,
+        (err, res) => {
+          if (err) throw err;
+          console.log(
+            "\nAdded " +
+              employeeFirstName +
+              employeeLastName +
+              " to the database\n"
+          );
+          kickOffPromptQuestionWhatToDo();
+        }
+      );
+    }
   }
-
-  //   //console.log(empInfo);
-  //   const empRole = empInfo.employeeRole.split(" ");
-  //   if (empInfo.employeeManager === "None") {
-  //     empInfo.employeeManager = null;
-  //   }
-  //   if (empInfo.employeeManager != null) {
-  //     const empManager = empInfo.employeeManager.split(" ");
-  //     connection.query(
-  //       `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-  //     VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empRole[0]}, ${empManager[0]})`,
-  //       (err, res) => {
-  //         if (err) throw err;
-  //         console.log(
-  //           "\nAdded " +
-  //             empInfo.employeeFirstName +
-  //             empInfo.employeeLastName +
-  //             " to the database\n"
-  //         );
-  //         kickOffPromptQuestionWhatToDo();
-  //       }
-  //     );
-  //   } else {
-  //     connection.query(
-  //       `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-  //   VALUES ("${empInfo.employeeFirstName}", "${empInfo.employeeLastName}", ${empRole[0]}, ${empInfo.employeeManager})`,
-  //       (err, res) => {
-  //         if (err) throw err;
-  //         console.log(
-  //           "\nAdded " +
-  //             empInfo.employeeFirstName +
-  //             empInfo.employeeLastName +
-  //             " to the database\n"
-  //         );
-  //         kickOffPromptQuestionWhatToDo();
-  //       }
-  //     );
-  //   }
-  // });
 };
-
-// const addDepartment = async () => {
-//   const { newDeptTitle } = await inquirer.prompt([
-//     {
-//       type: "input",
-//       name: "newDeptTitle",
-//       message: "What is the title of the department to be added?",
-//     },
-//   ]);
-//   if (newDeptTitle === "") {
-//     console.log(
-//       "No department added, requires a name value for department to be provided."
-//     );
-//   } else {
-//     await getDepartments();
-//     let tempDeptArray;
-//     let deptAlreadyExists = false;
-//     for (let i = 0; i < departmentsArray.length; i++) {
-//       tempDeptArray = departmentsArray[i].split(" ");
-//       if (newDeptTitle === tempDeptArray[1]) {
-//         deptAlreadyExists = true;
-//       }
-//     }
-//     if (deptAlreadyExists) {
-//       console.log("Department already exists.", newDeptTitle);
-//     } else {
-//       connection.query(
-//         `INSERT INTO department (name)
-//         VALUES ("${newDeptTitle}")`,
-//         (err, res) => {
-//           if (err) throw err;
-//           console.log("\nAdded " + newDeptTitle + " to the database.\n");
-//         }
-//       );
-//     }
-//   }
-//   kickOffPromptQuestionWhatToDo();
-// };
 
 const addDepartment = async () => {
   const { newDeptTitle } = await inquirer.prompt([
@@ -511,7 +465,6 @@ const removeEmployee = async () => {
 };
 
 const updateEmployeeRole = async () => {
-  console.log("inside updateEmpRole!!!");
   //this function builds employeesArray which questionEmployeeInfo employeeManager choices has as its value
   await getEmployees();
   //this function builds rolesArray which questionEmployeeInfo employeeRole choices has as it values
@@ -621,6 +574,35 @@ const updateEmployeeManager = async () => {
   }
 };
 
+const updateRoleDept = async () => {
+  console.log("inside updateRoleDept!!!");
+  await getRoles();
+  await getDepartments();
+
+  const { updateRole, updateDept } = await inquirer.prompt(
+    questionUpdateRoleDept
+  );
+
+  const roleToUpdate = updateRole.split(" ");
+  const deptForRole = updateDept.split(" ");
+
+  connection.query(
+    `UPDATE role SET department_id = ? WHERE id = ?`,
+    [deptForRole[0], roleToUpdate[0]],
+    (err, res) => {
+      if (err) throw err;
+      console.log(
+        "\nUpdated " +
+          roleToUpdate +
+          " to have be in this department: " +
+          updateDept +
+          " in the database.\n"
+      );
+      kickOffPromptQuestionWhatToDo();
+    }
+  );
+};
+
 function getRoles() {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT * FROM role;`, (err, res) => {
@@ -714,6 +696,9 @@ const kickOffPromptQuestionWhatToDo = async () => {
       return;
     case "Update Employee Manager":
       updateEmployeeManager();
+      return;
+    case "Update Role Department":
+      updateRoleDept();
       return;
     case "EXIT":
       return connection.end();
