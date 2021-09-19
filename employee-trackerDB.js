@@ -42,6 +42,7 @@ const questionSelectWhatToDo = [
       "Update Employee Role",
       "Update Employee Manager",
       "Update Role Department",
+      "View Department Total Utilized Budget",
       "EXIT",
     ],
   },
@@ -203,6 +204,16 @@ const questionUpdateRoleDept = [
     type: "list",
     name: "updateDept",
     message: "Which deparment do you want to assign the selected role?",
+    choices: departmentsArray,
+  },
+];
+
+//Create an array of question for user input on View Dept Budget
+const questionViewDeptBudget = [
+  {
+    type: "list",
+    name: "viewDeptBudget",
+    message: "Which deparment do you want to see its total utilized budget?",
     choices: departmentsArray,
   },
 ];
@@ -641,6 +652,26 @@ function getEmployees() {
   });
 }
 
+const viewDeptBudget = async () => {
+  await getDepartments();
+
+  const { viewDeptBudget } = await inquirer.prompt(questionViewDeptBudget);
+  const dept = viewDeptBudget.split(" ");
+
+  connection.query(
+    `SELECT department_id, sum(salary) AS TotalDeptBudget FROM role WHERE department_id =?`,
+    [dept[0]],
+    (err, res) => {
+      if (err) throw err;
+      console.log(
+        "Department " + dept[1] + " utilized budget total is: ",
+        res[0].TotalDeptBudget
+      );
+    }
+  );
+  kickOffPromptQuestionWhatToDo();
+};
+
 function doConsoleTable(response) {
   const table = cTable.getTable(response);
   console.log(table);
@@ -699,6 +730,9 @@ const kickOffPromptQuestionWhatToDo = async () => {
       return;
     case "Update Role Department":
       updateRoleDept();
+      return;
+    case "View Department Total Utilized Budget":
+      viewDeptBudget();
       return;
     case "EXIT":
       return connection.end();
