@@ -2,15 +2,15 @@
 
 ## Description
 
-Before getting into the explanation, [>>>>> You may click here for Emplooyee Tracker's video walk-thru <<<<<](https://linkComing.com)
+-This homework/app is a terminal interface, for now, that allows an employer to manage their employees list, including adding new employees, assigning their roles and departments and controlling if an employee has a manager. New roles and departments may also be added. Additionally, the interface provides a way to view all relevant information on the employee, such as what role and department they have as well as the total utilized budget for a department. Updates can also be made to employees, should they change a role or department or manager. Finally, the app also supports updating information as well as removing items such as an employee from the list.
 
--This homework/app is a terminal interface for now.
+## Technologies Used
 
 -It has a fun introduction via the ASCIIART-Logo module where a splash screen (that is, a rectangular panel with the logo inside panel) is rendered on the terminal. It has a nice yellow border and the logo is in cyan. Both of which makes this fun introduction pop a little.
 
--It leverages inquirer module for prompt questions input/choices.
+-It leverages Inquirer module for prompt questions input/choices.
 
--Behind the interface though is mysql module that is hooked into a local database. The local database was created using schema and seed sql files, both of which are included in this repo (named: employee_trackerDB_Schema.sql & employee_trackerDB_Seed.sql, respectively). Data was pre-populated into this database.
+-Behind the interface though is MYSQL module that is hooked into a local database. The local database was created using SCHEMA and SEED sql files, both of which are included in this repo (named: employee_trackerDB_Schema.sql & employee_trackerDB_Seed.sql, respectively). Data was pre-populated into this database.
 
 -The database is named employee_trackerDB. It has 3 tables. 2 tables make use of FK/Foreign Keys. For better understanding of these 3 tables, please refer to the design mockup and details that are in the Instructions section below.
 
@@ -21,6 +21,22 @@ Before getting into the explanation, [>>>>> You may click here for Emplooyee Tra
 -Async/await was used, reducing needing extra .then's.
 
 -Finally, destructering was applied in making accessing variables a lot easier, more straightforward and less coding.
+
+## Deployed App
+
+[>>>>> You may click here for Emplooyee Tracker's video walk-thru <<<<<](https://drive.google.com/file/d/1n4RIGtObKeOJWIx7P6FCaGosDJn-qzhn/view)
+
+## Table of Contents
+
+- [Description](#description)
+- [Technologies Used](#technologies-used)
+- [Deployed App](#deployed-app)
+- [Task](#task)
+- [Instructions](#instructions)
+- [Minimum Requirements](#minimum-requirements)
+- [Bonus](#bonus)
+- [Commit Early and Often](#commit-early-and-often)
+- [Submission on BCS](#submission-on-bcs)
 
 ## Task
 
